@@ -54,6 +54,7 @@ export default function OrdersPage() {
   const [error, setError] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<'all' | OrderStatus>('all')
   const [updatingStatus, setUpdatingStatus] = useState<number | null>(null)
+  const [deletingOrder, setDeletingOrder] = useState<number | null>(null)
 
   useEffect(() => {
     fetchOrders(statusFilter)
@@ -133,6 +134,65 @@ export default function OrdersPage() {
       alert(err.message || 'Đã xảy ra lỗi khi cập nhật trạng thái')
     } finally {
       setUpdatingStatus(null)
+    }
+  }
+
+  const handleDeleteOrder = async (orderId: number) => {
+    if (!window.confirm('Bạn có chắc chắn muốn xóa đơn hàng này? Việc xóa sẽ xóa hoàn toàn thông tin trong hệ thống.')) {
+      return
+    }
+
+    try {
+      setDeletingOrder(orderId)
+      const token = localStorage.getItem('admin_token')
+      const response = await fetch(`/api/admin/orders/${orderId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: token ? `Bearer ${token}` : '',
+        },
+      })
+
+      const result = await response.json()
+
+      if (!response.ok || !result.success) {
+        if (response.status === 401) {
+          window.location.href = '/admin/login'
+          return
+        }
+        throw new Error(result.error || 'Không thể xóa đơn hàng')
+      }
+
+      // Xóa thành công, cập nhật state
+      setOrders((prevOrders) => prevOrders.filter((order) => order.id !== orderId))
+    } catch (err: any) {
+      console.error('Error deleting order:', err)
+      alert(err.message || 'Đã xảy ra lỗi khi xóa đơn hàng')
+    } finally {
+      setDeletingOrder(null)
+    }
+  }
+
+  const handleCopyOrder = async (order: Order) => {
+    try {
+      const itemsText = order.items
+        .map((item) => `- ${item.product_name} x${item.quantity} (${(item.subtotal || 0).toLocaleString('vi-VN')}đ)`)
+        .join('\n')
+      
+      const copyText = `MÃ ĐƠN HÀNG: #${order.id}
+Tên khách hàng: ${order.customer_name}
+Số điện thoại: ${order.customer_phone}
+Địa chỉ giao hàng: ${order.customer_address}
+
+Danh sách sản phẩm:
+${itemsText}
+
+Tổng cộng: ${order.totalLabel}`
+
+      await navigator.clipboard.writeText(copyText)
+      alert('Đã copy thông tin đơn hàng vào bộ nhớ tạm (Clipboard)!')
+    } catch (error) {
+      console.error('Copy failed', error)
+      alert('Không thể copy thông tin, trình duyệt của bạn có thể không hỗ trợ tính năng này.')
     }
   }
 
@@ -253,6 +313,22 @@ export default function OrdersPage() {
                       {order.coupon_code ? ` (${order.coupon_code})` : ''}
                     </div>
                   )}
+                </div>
+
+                <div className="flex flex-col items-stretch gap-2 ml-2 pl-4 border-l border-gray-100 shrink-0">
+                  <button
+                    onClick={() => handleCopyOrder(order)}
+                    className="flex w-full items-center justify-center gap-1.5 rounded-md bg-gray-50 border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:bg-gray-100 focus:ring-2 focus:ring-gray-200"
+                  >
+                    Copy đơn
+                  </button>
+                  <button
+                    onClick={() => handleDeleteOrder(order.id)}
+                    disabled={deletingOrder === order.id}
+                    className="flex w-full items-center justify-center gap-1.5 rounded-md border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-600 transition hover:bg-red-100 focus:ring-2 focus:ring-red-200 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {deletingOrder === order.id ? 'Đang xóa' : 'Xóa đơn'}
+                  </button>
                 </div>
                 </div>
 

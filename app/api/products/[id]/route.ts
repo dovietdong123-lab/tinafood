@@ -238,11 +238,10 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
   try {
     const id = parseInt(params.id)
 
-    // Soft delete (đổi status)
-    await query(
-      `UPDATE products SET status = 'deleted', updated_at = NOW() WHERE id = ?`,
-      [id]
-    )
+    // Hard delete: xóa các bản ghi liên quan ở những bảng phụ trước, sau đó xóa sản phẩm chính
+    await query(`DELETE FROM product_variants WHERE product_id = ?`, [id])
+    await query(`DELETE FROM product_reviews WHERE product_id = ?`, [id])
+    await query(`DELETE FROM products WHERE id = ?`, [id])
 
     return NextResponse.json({
       success: true,

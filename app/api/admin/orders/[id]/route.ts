@@ -102,3 +102,34 @@ export async function PUT(request: Request, { params }: { params: { id: string }
   }
 }
 
+// DELETE - Xóa đơn hàng
+export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+  try {
+    await requireAuth() // Check authentication
+  } catch (error: any) {
+    console.error('Auth error in DELETE /api/admin/orders/[id]:', error)
+    return NextResponse.json({ success: false, error: 'Unauthorized - ' + (error.message || 'Invalid session') }, { status: 401 })
+  }
+  try {
+    const id = parseInt(params.id)
+
+    // Xóa order_items trước để tránh lỗi foreign key constraint (nếu có)
+    await query('DELETE FROM order_items WHERE order_id = ?', [id])
+    // Xóa order
+    await query('DELETE FROM orders WHERE id = ?', [id])
+
+    return NextResponse.json({
+      success: true,
+      message: 'Order deleted successfully',
+    })
+  } catch (error: any) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: error.message || 'Failed to delete order',
+      },
+      { status: 500 }
+    )
+  }
+}
+
