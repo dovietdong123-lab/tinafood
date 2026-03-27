@@ -782,7 +782,19 @@ export default function CheckoutOverlay({ isOpen, onClose, directProduct }: Chec
             </button>
             <div className="text-2xl mb-2">🎉</div>
             <div className="text-base font-semibold mb-1">Cảm ơn đã đặt hàng!</div>
-            <div className="text-sm text-gray-600 mb-1">Đơn hàng của bạn đã được ghi nhận.</div>
+            <div className="text-sm text-gray-600 mb-4">Đơn hàng của bạn đã được ghi nhận.</div>
+            
+            <a
+              href="#" // Thay link URL chạy quảng cáo của bạn vào đây
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg font-semibold shadow-sm transition-colors text-center"
+            >
+              Nhận ngay ưu đãi
+            </a>
+            <p className="text-xs text-gray-400 mt-2">
+              * Nhấn để xem quà tặng hoặc ưu đãi
+            </p>
           </div>
         </div>
       )}
