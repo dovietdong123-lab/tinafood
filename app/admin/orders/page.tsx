@@ -31,6 +31,14 @@ interface Order {
   items: OrderItem[]
 }
 
+interface FormattedOrder extends Order {
+  createdLabel: string
+  updatedLabel: string
+  subtotalLabel: string
+  discountLabel: string
+  totalLabel: string
+}
+
 const STATUS_OPTIONS: { value: 'all' | OrderStatus; label: string }[] = [
   { value: 'all', label: 'Tất cả trạng thái' },
   { value: 'pending', label: 'Chờ xử lý' },
@@ -122,8 +130,8 @@ export default function OrdersPage() {
       }
 
       // Update local state
-      setOrders((prevOrders) =>
-        prevOrders.map((order) =>
+      setOrders((prevOrders: Order[]) =>
+        prevOrders.map((order: Order) =>
           order.id === orderId
             ? { ...order, status: newStatus, updated_at: new Date().toISOString() }
             : order
@@ -163,7 +171,7 @@ export default function OrdersPage() {
       }
 
       // Xóa thành công, cập nhật state
-      setOrders((prevOrders) => prevOrders.filter((order) => order.id !== orderId))
+      setOrders((prevOrders: Order[]) => prevOrders.filter((order: Order) => order.id !== orderId))
     } catch (err: any) {
       console.error('Error deleting order:', err)
       alert(err.message || 'Đã xảy ra lỗi khi xóa đơn hàng')
@@ -172,7 +180,7 @@ export default function OrdersPage() {
     }
   }
 
-  const handleCopyOrder = async (order: Order) => {
+  const handleCopyOrder = async (order: FormattedOrder) => {
     try {
       const itemsText = order.items
         .map((item) => `- ${item.product_name} x${item.quantity} (${(item.subtotal || 0).toLocaleString('vi-VN')}đ)`)
@@ -217,7 +225,7 @@ Tổng cộng: ${order.totalLabel}`
     </div>
   )
 
-  const formattedOrders = useMemo(
+  const formattedOrders = useMemo<FormattedOrder[]>(
     () =>
       orders.map((order) => ({
         ...order,
@@ -273,8 +281,8 @@ Tổng cộng: ${order.totalLabel}`
         </div>
       ) : (
         <div className="space-y-5">
-          {formattedOrders.map((order) => {
-            const badge = STATUS_BADGE[order.status]
+          {formattedOrders.map((order: FormattedOrder) => {
+            const badge = STATUS_BADGE[order.status as OrderStatus]
             return (
               <div key={order.id} className="rounded-xl border bg-white shadow-sm">
                 <div className="flex flex-wrap items-center gap-3 border-b px-5 py-4">
