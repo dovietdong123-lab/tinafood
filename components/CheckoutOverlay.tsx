@@ -39,19 +39,19 @@ export default function CheckoutOverlay({ isOpen, onClose, directProduct }: Chec
   const [isClosing, setIsClosing] = useState(false)
   const [storeName, setStoreName] = useState('TikTiok Shop')
   const [orderCountdown, setOrderCountdown] = useState(27099)
-  
+
   // Form state
   const [customerName, setCustomerName] = useState('')
   const [customerPhone, setCustomerPhone] = useState('')
   const [customerAddress, setCustomerAddress] = useState('')
-  
+
   // Validation errors
   const [errors, setErrors] = useState({
     name: '',
     phone: '',
     address: '',
   })
-  
+
   // UI state
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showThankYouModal, setShowThankYouModal] = useState(false)
@@ -87,7 +87,7 @@ export default function CheckoutOverlay({ isOpen, onClose, directProduct }: Chec
     if (isOpen) {
       // Kiểm tra xem có phải là quay lại từ back button không
       const isBackNavigation = sessionStorage.getItem('checkout_overlay_back') === 'true'
-      
+
       setIsClosing(false)
       // Reset form
       setCustomerName('')
@@ -98,7 +98,7 @@ export default function CheckoutOverlay({ isOpen, onClose, directProduct }: Chec
       setAppliedCoupon(null)
       setCouponMessage(null)
       setShowThankYouModal(false)
-      
+
       // Nếu có directProduct, sử dụng nó thay vì load từ cart
       if (directProduct) {
         setCart([
@@ -234,7 +234,7 @@ export default function CheckoutOverlay({ isOpen, onClose, directProduct }: Chec
           quantity: newQty,
         }),
       })
-      
+
       // Reload cart từ server để đảm bảo sync
       if (response.ok) {
         const data = await response.json()
@@ -349,6 +349,19 @@ export default function CheckoutOverlay({ isOpen, onClose, directProduct }: Chec
 
         // Show thank you modal
         setShowThankYouModal(true)
+        
+        // Cập nhật URL để Pixel/Tracking quảng cáo nhận diện trạng thái mua hàng thành công
+        try {
+          const currentUrl = new URL(window.location.href)
+          currentUrl.searchParams.set('checkout', 'success')
+          if (result.data?.id) {
+            currentUrl.searchParams.set('order_id', result.data.id)
+          }
+          window.history.pushState(null, '', currentUrl.toString())
+        } catch (e) {
+          window.history.pushState(null, '', '?checkout=success')
+        }
+
         setCart([])
         setAppliedCoupon(null)
         setCouponInput('')
@@ -411,8 +424,8 @@ export default function CheckoutOverlay({ isOpen, onClose, directProduct }: Chec
   const panelTransformClass = isClosing
     ? 'translate-x-full'
     : isAnimating
-    ? 'translate-x-full'
-    : 'translate-x-0'
+      ? 'translate-x-full'
+      : 'translate-x-0'
 
   return (
     <div
@@ -567,9 +580,8 @@ export default function CheckoutOverlay({ isOpen, onClose, directProduct }: Chec
             </div>
             {couponMessage && (
               <p
-                className={`text-xs mt-2 ${
-                  couponMessage.type === 'success' ? 'text-green-600' : 'text-red-500'
-                }`}
+                className={`text-xs mt-2 ${couponMessage.type === 'success' ? 'text-green-600' : 'text-red-500'
+                  }`}
               >
                 {couponMessage.text}
               </p>
@@ -638,9 +650,8 @@ export default function CheckoutOverlay({ isOpen, onClose, directProduct }: Chec
                     setErrors({ ...errors, name: '' })
                   }
                 }}
-                className={`w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300 ${
-                  errors.name ? 'border-red-500' : ''
-                }`}
+                className={`w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300 ${errors.name ? 'border-red-500' : ''
+                  }`}
                 placeholder="Nguyễn Văn A"
               />
               {errors.name && (
@@ -658,12 +669,12 @@ export default function CheckoutOverlay({ isOpen, onClose, directProduct }: Chec
                 onChange={(e) => {
                   // Chỉ cho phép số, giới hạn 10 số
                   let value = e.target.value.replace(/\D/g, '')
-                  
+
                   // Giới hạn tối đa 10 số
                   if (value.length > 10) {
                     value = value.slice(0, 10)
                   }
-                  
+
                   // Format hiển thị: 0123 456 789
                   let formatted = value
                   if (value.length > 4) {
@@ -672,7 +683,7 @@ export default function CheckoutOverlay({ isOpen, onClose, directProduct }: Chec
                   if (value.length > 7) {
                     formatted = value.slice(0, 4) + ' ' + value.slice(4, 7) + ' ' + value.slice(7)
                   }
-                  
+
                   setCustomerPhone(formatted)
                   if (errors.phone) {
                     setErrors({ ...errors, phone: '' })
@@ -688,9 +699,8 @@ export default function CheckoutOverlay({ isOpen, onClose, directProduct }: Chec
                   }
                 }}
                 maxLength={12} // 10 số + 2 khoảng trắng
-                className={`w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300 ${
-                  errors.phone ? 'border-red-500' : ''
-                }`}
+                className={`w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300 ${errors.phone ? 'border-red-500' : ''
+                  }`}
                 placeholder="0123 456 789"
               />
               {errors.phone && (
@@ -716,9 +726,8 @@ export default function CheckoutOverlay({ isOpen, onClose, directProduct }: Chec
                     setErrors({ ...errors, address: '' })
                   }
                 }}
-                className={`w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300 ${
-                  errors.address ? 'border-red-500' : ''
-                }`}
+                className={`w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300 ${errors.address ? 'border-red-500' : ''
+                  }`}
                 placeholder="Số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố"
               />
               {errors.address && (
@@ -782,19 +791,7 @@ export default function CheckoutOverlay({ isOpen, onClose, directProduct }: Chec
             </button>
             <div className="text-2xl mb-2">🎉</div>
             <div className="text-base font-semibold mb-1">Cảm ơn đã đặt hàng!</div>
-            <div className="text-sm text-gray-600 mb-4">Đơn hàng của bạn đã được ghi nhận.</div>
-            
-            <a
-              href="#" // Thay link URL chạy quảng cáo của bạn vào đây
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg font-semibold shadow-sm transition-colors text-center"
-            >
-              Nhận ngay ưu đãi
-            </a>
-            <p className="text-xs text-gray-400 mt-2">
-              * Nhấn để xem quà tặng hoặc ưu đãi
-            </p>
+            <div className="text-sm text-gray-600 mb-1">Đơn hàng của bạn đã được ghi nhận.</div>
           </div>
         </div>
       )}
