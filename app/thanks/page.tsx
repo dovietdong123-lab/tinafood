@@ -1,26 +1,24 @@
 'use client'
 
-import React, { useEffect, useState, Suspense } from 'react'
+import React, { Suspense } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 
+/**
+ * Component hiển thị nội dung trang cảm ơn.
+ * Được bao bọc trong Suspense vì dùng useSearchParams.
+ */
 function ThanksContent() {
   const searchParams = useSearchParams()
   const orderId = searchParams.get('order_id')
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  if (!mounted) return null
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden transform transition-all hover:scale-[1.01]">
-        {/* Header with Gradient */}
-        <div className="bg-gradient-to-r from-emerald-500 to-teal-600 h-32 flex items-center justify-center relative">
-          <div className="absolute -bottom-10 bg-white rounded-full p-4 shadow-lg border-4 border-white">
+      {/* Container chính: Đảm bảo max-width cố định và giao diện ổn định */}
+      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+        {/* Header với Gradient mượt mà */}
+        <div className="bg-gradient-to-br from-emerald-500 to-teal-600 h-32 flex items-center justify-center relative">
+          <div className="absolute -bottom-10 bg-white rounded-full p-4 shadow-md border-4 border-white">
             <svg
               className="w-12 h-12 text-emerald-500"
               fill="none"
@@ -38,42 +36,43 @@ function ThanksContent() {
           </div>
         </div>
 
-        {/* Content */}
-        <div className="pt-16 pb-10 px-8 text-center">
+        {/* Nội dung chi tiết */}
+        <div className="pt-16 pb-10 px-8 text-center bg-white">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Cảm ơn bạn!</h1>
-          <p className="text-gray-600 text-lg mb-6">
-            Đơn hàng của bạn đã được tiếp nhận thành công.
+          <p className="text-gray-600 text-base mb-6 leading-relaxed">
+            Đơn hàng của bạn đã được hệ thống tiếp nhận và đang chờ xử lý.
           </p>
 
-          <div className="bg-emerald-50 rounded-xl p-4 mb-8 border border-emerald-100">
-            <p className="text-emerald-800 font-medium text-sm mb-1 uppercase tracking-wider">
-              Mã đơn hàng
+          {/* Box hiển thị Mã đơn hàng - Cố định kích thước để tránh nhảy layout */}
+          <div className="bg-emerald-50 rounded-xl p-5 mb-8 border border-emerald-100 min-h-[90px] flex flex-col justify-center items-center">
+            <p className="text-emerald-800 font-semibold text-xs mb-1 uppercase tracking-widest opacity-80">
+              Mã đơn hàng của bạn
             </p>
-            <p className="text-2xl font-mono font-bold text-emerald-900">
+            <p className="text-2xl font-mono font-bold text-emerald-900 select-all">
               #{orderId || '------'}
             </p>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-4">
             <p className="text-sm text-gray-500 italic">
-              Chúng tôi sẽ sớm liên hệ với bạn để xác nhận thông tin giao hàng.
+              Chúng tôi sẽ liên hệ sớm nhất qua số điện thoại bạn cung cấp.
             </p>
-            <div className="h-px bg-gray-100 w-full my-6"></div>
+            <div className="h-px bg-gray-100 w-full my-4"></div>
             <Link
               href="/"
-              className="block w-full bg-black text-white font-bold py-4 rounded-xl shadow-lg hover:bg-gray-800 transition-colors transform active:scale-95"
+              className="block w-full bg-gray-900 text-white font-bold py-4 rounded-xl shadow-md hover:bg-black transition-all transform active:scale-95 text-center no-underline"
             >
               Tiếp tục mua sắm
             </Link>
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="bg-gray-50 py-4 px-8 border-t border-gray-100 flex justify-between items-center">
-          <span className="text-xs text-gray-400">© 2026 TinaFood</span>
-          <div className="flex gap-3">
-            <span className="text-xs text-gray-400 hover:text-gray-600 cursor-pointer">Hỗ trợ</span>
-            <span className="text-xs text-gray-400 hover:text-gray-600 cursor-pointer">Chính sách</span>
+        {/* Footer info */}
+        <div className="bg-gray-50/50 py-4 px-8 border-t border-gray-100 flex justify-between items-center text-[10px] text-gray-400 font-medium">
+          <span>TINAFOOD © 2026</span>
+          <div className="flex gap-4">
+            <Link href="/" className="hover:text-emerald-600 transition-colors">HỖ TRỢ</Link>
+            <Link href="/" className="hover:text-emerald-600 transition-colors">ĐIỀU KHOẢN</Link>
           </div>
         </div>
       </div>
@@ -81,9 +80,18 @@ function ThanksContent() {
   )
 }
 
+/**
+ * Trang /thanks chính thức của ứng dụng.
+ */
 export default function ThanksPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center">Đang tải...</div>}>
+    <Suspense 
+      fallback={
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+          <div className="max-w-md w-full animate-pulse bg-white rounded-2xl h-[450px]"></div>
+        </div>
+      }
+    >
       <ThanksContent />
     </Suspense>
   )
