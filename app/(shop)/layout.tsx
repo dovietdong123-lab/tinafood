@@ -1,8 +1,5 @@
 import type { Metadata } from 'next'
-import './globals.css'
 import { query } from '@/lib/db'
-
-export const dynamic = 'force-dynamic'
 
 type StoreSettings = Record<string, string>
 
@@ -30,24 +27,12 @@ async function loadStoreSettings(): Promise<StoreSettings> {
       return acc
     }, {})
   } catch (error) {
-    console.error('[RootLayout] Failed to load store settings:', error)
+    console.error('[ShopLayout] Failed to load store settings:', error)
     return {}
   }
 }
 
-export async function generateMetadata(): Promise<Metadata> {
-  const settings = await loadStoreSettings()
-  const storeDescription = (settings.storeDescription || '').trim()
-  const storeName = (settings.storeName || '').trim()
-
-  const title = storeDescription || storeName || 'TikTiok Shop'
-  return {
-    title,
-    description: storeDescription || 'E-commerce shop',
-  }
-}
-
-export default async function RootLayout({
+export default async function ShopLayout({
   children,
 }: {
   children: React.ReactNode
@@ -58,26 +43,38 @@ export default async function RootLayout({
   const supportEmail = (settings.supportEmail || '').trim()
   const hotline = (settings.hotline || '').trim()
   const businessAddress = (settings.businessAddress || '').trim()
-  const adsPixelCode = (settings.adsPixelCode || '').trim()
 
   return (
-    <html lang="vi">
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-        <script src="https://cdn.tailwindcss.com"></script>
-        {adsPixelCode && (
-          <script
-            dangerouslySetInnerHTML={{ __html: adsPixelCode }}
-            suppressHydrationWarning
-          />
-        )}
-      </head>
-      <body className="bg-white w-full relative">
-        <div className="w-full max-w-[500px] mx-auto relative min-h-screen">
-          {children}
+    <div className="w-full max-w-[500px] mx-auto relative flex flex-col min-h-screen">
+      <div className="flex-1">
+        {children}
+      </div>
+
+      <footer className="mt-4 px-4 py-3 text-xs text-gray-600 bg-gray-50 border-t border-gray-200">
+        <div className="space-y-1">
+          {storeName && <p className="text-sm font-semibold text-gray-900">{storeName}</p>}
+          <div className="flex flex-col gap-0.5">
+            {supportEmail && (
+              <p>
+                <span className="font-medium">Email hỗ trợ:</span>{' '}
+                <a href={`mailto:${supportEmail}`} className="text-blue-600 hover:underline">
+                  {supportEmail}
+                </a>
+              </p>
+            )}
+            {hotline && (
+              <p>
+                <span className="font-medium">Hotline:</span> {hotline}
+              </p>
+            )}
+            {businessAddress && (
+              <p>
+                <span className="font-medium">Địa chỉ:</span> {businessAddress}
+              </p>
+            )}
+          </div>
         </div>
-      </body>
-    </html>
+      </footer>
+    </div>
   )
 }
-
