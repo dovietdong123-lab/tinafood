@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import MediaDisplay from '@/components/MediaDisplay'
 
 interface CartItem {
@@ -34,6 +35,7 @@ const capitalizeWords = (text?: string) => {
 }
 
 export default function CheckoutOverlay({ isOpen, onClose, directProduct }: CheckoutOverlayProps) {
+  const router = useRouter()
   const [cart, setCart] = useState<CartItem[]>([])
   const [isAnimating, setIsAnimating] = useState(true)
   const [isClosing, setIsClosing] = useState(false)
@@ -54,7 +56,6 @@ export default function CheckoutOverlay({ isOpen, onClose, directProduct }: Chec
 
   // UI state
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [showThankYouModal, setShowThankYouModal] = useState(false)
   const [couponInput, setCouponInput] = useState('')
   const [appliedCoupon, setAppliedCoupon] = useState<{
     coupon: {
@@ -97,7 +98,7 @@ export default function CheckoutOverlay({ isOpen, onClose, directProduct }: Chec
       setCouponInput('')
       setAppliedCoupon(null)
       setCouponMessage(null)
-      setShowThankYouModal(false)
+
 
       // Nếu có directProduct, sử dụng nó thay vì load từ cart
       if (directProduct) {
@@ -347,20 +348,14 @@ export default function CheckoutOverlay({ isOpen, onClose, directProduct }: Chec
           window.dispatchEvent(new Event('cartUpdated'))
         }
 
-        // Show thank you modal
-        setShowThankYouModal(true)
+        // Redirect to thank you page
+        const thanksUrl = result.data?.id 
+          ? `/thanks?order_id=${result.data.id}`
+          : '/thanks'
         
-        // Cập nhật URL để Pixel/Tracking quảng cáo nhận diện trạng thái mua hàng thành công
-        try {
-          const currentUrl = new URL(window.location.href)
-          currentUrl.searchParams.set('checkout', 'success')
-          if (result.data?.id) {
-            currentUrl.searchParams.set('order_id', result.data.id)
-          }
-          window.history.pushState(null, '', currentUrl.toString())
-        } catch (e) {
-          window.history.pushState(null, '', '?checkout=success')
-        }
+        router.push(thanksUrl)
+        onClose()
+
 
         setCart([])
         setAppliedCoupon(null)
@@ -414,12 +409,8 @@ export default function CheckoutOverlay({ isOpen, onClose, directProduct }: Chec
     setCouponInput('')
   }
 
-  const handleCloseThankYou = () => {
-    setShowThankYouModal(false)
-    handleClose()
-  }
-
   if (!isOpen && !isClosing) return null
+
 
   const panelTransformClass = isClosing
     ? 'translate-x-full'
@@ -765,37 +756,10 @@ export default function CheckoutOverlay({ isOpen, onClose, directProduct }: Chec
               )}
             </button>
             <p className="text-center text-xs text-gray-500 mt-2">Đảm bảo hoàn tiền nếu đơn không thành công</p>
-          </div>
         </div>
       </div>
-
-      {/* Thank You Modal */}
-      {showThankYouModal && (
-        <div
-          id="orderThankyouModal"
-          className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              handleCloseThankYou()
-            }
-          }}
-        >
-          <div className="relative bg-white rounded-lg shadow-xl w-11/12 max-w-sm p-5 text-center">
-            <button
-              id="orderThankyouClose"
-              onClick={handleCloseThankYou}
-              aria-label="Đóng"
-              className="absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100"
-            >
-              &times;
-            </button>
-            <div className="text-2xl mb-2">🎉</div>
-            <div className="text-base font-semibold mb-1">Cảm ơn đã đặt hàng!</div>
-            <div className="text-sm text-gray-600 mb-1">Đơn hàng của bạn đã được ghi nhận.</div>
-          </div>
-        </div>
-      )}
     </div>
-  )
+  </div>
+)
 }
 
