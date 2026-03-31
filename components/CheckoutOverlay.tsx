@@ -68,6 +68,7 @@ export default function CheckoutOverlay({ isOpen, onClose, directProduct }: Chec
   } | null>(null)
   const [couponMessage, setCouponMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [couponLoading, setCouponLoading] = useState(false)
+  const [availableCoupons, setAvailableCoupons] = useState<any[]>([])
 
   useEffect(() => {
     async function loadSettings() {
@@ -99,6 +100,19 @@ export default function CheckoutOverlay({ isOpen, onClose, directProduct }: Chec
       setAppliedCoupon(null)
       setCouponMessage(null)
 
+      // Fetch available coupons
+      const loadCoupons = async () => {
+        try {
+          const res = await fetch('/api/coupons')
+          const data = await res.json()
+          if (data.success && Array.isArray(data.data)) {
+            setAvailableCoupons(data.data)
+          }
+        } catch (error) {
+          console.error('Failed to load coupons:', error)
+        }
+      }
+      loadCoupons()
 
       // Nếu có directProduct, sử dụng nó thay vì load từ cart
       if (directProduct) {
@@ -581,6 +595,28 @@ export default function CheckoutOverlay({ isOpen, onClose, directProduct }: Chec
               <div className="mt-2 text-xs text-green-600">
                 Đã áp dụng mã {appliedCoupon.coupon.code} • Tiết kiệm{' '}
                 {formatPrice(appliedCoupon.discountAmount)}
+              </div>
+            )}
+
+            {/* List of available coupons */}
+            {!appliedCoupon && availableCoupons.length > 0 && (
+              <div className="mt-3">
+                <p className="text-xs font-medium text-gray-500 mb-2">Mã giảm giá có thể áp dụng:</p>
+                <div className="flex flex-col gap-2">
+                  {availableCoupons.map((c) => (
+                    <button
+                      key={c.id}
+                      onClick={() => setCouponInput(c.code)}
+                      className="text-left bg-pink-50 border border-pink-100 rounded-lg px-3 py-2 text-xs hover:bg-pink-100 transition-colors"
+                    >
+                      <div className="font-semibold text-pink-700">{c.code}</div>
+                      <div className="text-pink-600 mt-0.5">
+                        Giảm {c.discount_type === 'percent' ? `${c.discount_value}%` : formatPrice(c.discount_value)}
+                        {c.min_order_amount ? ` (Đơn tối thiểu ${formatPrice(c.min_order_amount)})` : ''}
+                      </div>
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
           </div>

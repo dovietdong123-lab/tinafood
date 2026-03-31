@@ -47,8 +47,8 @@ function ThanksContent() {
         {/* Content */}
         <div className="pt-16 pb-10 px-8 text-center">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Cảm ơn bạn!</h1>
-          <p className="text-gray-600 text-lg mb-6">
-            Đơn hàng của bạn đã được tiếp nhận thành công.
+          <p className="text-gray-600 text-lg mb-6 leading-relaxed">
+            Chúng tôi sẽ sớm giao hàng đến bạn. <br className="hidden sm:block" /> Vui lòng để ý điện thoại giúp shop nhé!
           </p>
 
           <div className="bg-emerald-50 rounded-xl p-4 mb-8 border border-emerald-100">
@@ -62,7 +62,7 @@ function ThanksContent() {
 
           <div className="space-y-3">
             <p className="text-sm text-gray-500 italic">
-              Chúng tôi sẽ sớm liên hệ với bạn để xác nhận thông tin giao hàng.
+              TinaFood - Ăn ngon mỗi ngày
             </p>
             <div className="h-px bg-gray-100 w-full my-6"></div>
             <Link
