@@ -593,7 +593,7 @@ export default function CheckoutOverlay({ isOpen, onClose, directProduct }: Chec
             )}
             {appliedCoupon && (
               <div className="mt-2 text-xs text-green-600">
-                Đã áp dụng mã {appliedCoupon.coupon.code} • Tiết kiệm{' '}
+                Đã áp dụng mã <span className="font-semibold">{appliedCoupon.coupon.description || appliedCoupon.coupon.code}</span> • Tiết kiệm{' '}
                 {formatPrice(appliedCoupon.discountAmount)}
               </div>
             )}
@@ -609,7 +609,7 @@ export default function CheckoutOverlay({ isOpen, onClose, directProduct }: Chec
                       onClick={() => setCouponInput(c.code)}
                       className="text-left bg-pink-50 border border-pink-100 rounded-lg px-3 py-2 text-xs hover:bg-pink-100 transition-colors"
                     >
-                      <div className="font-semibold text-pink-700">{c.code}</div>
+                      <div className="font-semibold text-pink-700">{c.description || c.code}</div>
                       <div className="text-pink-600 mt-0.5">
                         Giảm {c.discount_type === 'percent' ? `${c.discount_value}%` : formatPrice(c.discount_value)}
                         {c.min_order_amount ? ` (Đơn tối thiểu ${formatPrice(c.min_order_amount)})` : ''}
@@ -635,7 +635,7 @@ export default function CheckoutOverlay({ isOpen, onClose, directProduct }: Chec
               </div>
               {discountAmount > 0 && (
                 <div className="flex justify-between text-sm text-green-600">
-                  <span>Giảm giá</span>
+                  <span>Giảm giá {appliedCoupon ? `(${appliedCoupon.coupon.description || appliedCoupon.coupon.code})` : ''}</span>
                   <span>-{formatPrice(discountAmount)}</span>
                 </div>
               )}
