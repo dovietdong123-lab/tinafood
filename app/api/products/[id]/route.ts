@@ -22,7 +22,8 @@ export async function GET(request: Request, { params }: { params: { id: string }
         gallery,
         sold,
         status,
-        attributes
+        attributes,
+        category_id
       FROM products
       WHERE ${isNumericId ? 'id' : 'slug'} = ? AND status = 'active'`,
       [identifierValue]
@@ -135,23 +136,42 @@ export async function GET(request: Request, { params }: { params: { id: string }
       variants: variants
     })
 
-    // Lấy recommended products (cùng category hoặc random)
-    const recommended = await query(
-      `SELECT 
-        id,
-        slug,
-        name,
-        price,
-        regular_price as regular,
-        discount,
-        image,
-        attributes
-      FROM products
-      WHERE id != ? AND status = 'active'
-      ORDER BY RAND()
-      LIMIT 6`,
-      [product.id]
-    )
+    // Lấy recommended products (cùng category hoặc random nếu không có category)
+    let recommended = []
+    if (product.category_id) {
+      recommended = await query(
+        `SELECT 
+          id,
+          slug,
+          name,
+          price,
+          regular_price as regular,
+          discount,
+          image,
+          attributes
+        FROM products
+        WHERE category_id = ? AND id != ? AND status = 'active'
+        ORDER BY created_at DESC`,
+        [product.category_id, product.id]
+      ) as any[]
+    } else {
+      recommended = await query(
+        `SELECT 
+          id,
+          slug,
+          name,
+          price,
+          regular_price as regular,
+          discount,
+          image,
+          attributes
+        FROM products
+        WHERE id != ? AND status = 'active'
+        ORDER BY RAND()
+        LIMIT 6`,
+        [product.id]
+      ) as any[]
+    }
 
     // Lấy reviews
     const reviews = await query(
